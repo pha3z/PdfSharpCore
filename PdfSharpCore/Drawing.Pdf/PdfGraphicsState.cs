@@ -510,7 +510,7 @@ namespace PdfSharpCore.Drawing.Pdf
         {
             _renderer.BeginGraphicMode();
             RealizeCtm();
-            _renderer.AppendPath(clipPath._corePath);
+            _renderer.AppendPath(clipPath);
             _renderer.Append(clipPath.FillMode == XFillMode.Winding ? "W n\n" : "W* n\n");
         }
 

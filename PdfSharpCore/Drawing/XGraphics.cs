@@ -559,6 +559,29 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 throw new ArgumentException("points", PSSR.PointArrayAtLeast(2));
             _renderer.AppendPolygon(points);
         }
+
+
+        public void DrawRectangle(XPen pen, XRect rect) => DrawRectangle(pen, null, rect);
+        public void DrawRectangle(XPen pen, double x, double y, double width, double height) => DrawRectangle(pen, null, x, y, width, height);
+        public void DrawRectangle(XBrush brush, XRect rect) => DrawRectangle(null, brush, rect);
+        public void DrawRectangle(XBrush brush, double x, double y, double width, double height) => DrawRectangle(null, brush, x, y, width, height);
+        public void DrawRectangle(XPen pen, XBrush brush, XRect rect) => DrawRectangle(pen, brush, rect.X, rect.Y, rect.Width, rect.Height);
+        public void DrawRectangle(XPen pen, XBrush brush, double x, double y, double width, double height)
+        {
+            if (pen == null && brush == null)
+                throw new ArgumentNullException("pen and brush", PSSR.NeedPenOrBrush);
+
+            _renderer.AppendRectangle(x, y, width, height);
+            _renderer.Realize(pen, brush);
+
+            if (pen != null && brush != null)
+                _renderer.AppendStrokeAndFill(XFillMode.Alternate);
+            else if (pen != null)
+                _renderer.AppendStroke();
+            else
+                _renderer.AppendFill(XFillMode.Alternate);   
+        }
+
         /// <summary>
         /// Draws the specified text string.
         /// </summary>

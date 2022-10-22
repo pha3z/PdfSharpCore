@@ -1387,7 +1387,7 @@ namespace PdfSharpCore.Drawing.Pdf
         /// <summary>
         /// Makes the specified pen and brush to the current graphics objects.
         /// </summary>
-        private void Realize(XPen pen, XBrush brush)
+        public void Realize(XPen pen, XBrush brush)
         {
             BeginPage();
             BeginGraphicMode();

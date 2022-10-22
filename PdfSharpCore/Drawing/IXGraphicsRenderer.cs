@@ -155,6 +155,7 @@ namespace PdfSharpCore.Drawing
         /// Writes a comment to the output stream. Comments have no effect on the rendering of the output.
         /// </summary>
         void WriteComment(string comment);
+        void Realize(XPen pen, XBrush brush);
 
         #endregion
     }
