@@ -46,7 +46,11 @@ using PdfSharpCore.Pdf.Advanced;
 namespace PdfSharpCore.Drawing.Pdf
 {
     /// <summary>
-    /// Represents a drawing surface for PdfPages.
+    /// 2022-10-21 MODIFICATION BY JAMES HOUX
+    /// HEAVILY MODIFIED THIS CLASS AND THE IXGraphicsRenderer INTERFACE
+    /// Draw...() methods changed to Append...() methods
+    /// and additional Append...() methods added to bypass the old Drawing API and instead
+    /// operate directly on PDF.
     /// </summary>
     internal class XGraphicsPdfRenderer : IXGraphicsRenderer
     {
@@ -117,9 +121,9 @@ namespace PdfSharpCore.Drawing.Pdf
         /// <summary>
         /// Strokes a single connection of two points.
         /// </summary>
-        public void DrawLine(XPen pen, double x1, double y1, double x2, double y2)
+        public void AppendLine(double x1, double y1, double x2, double y2)
         {
-            DrawLines(pen, new XPoint[] { new XPoint(x1, y1), new XPoint(x2, y2) });
+            AppendLine(new XPoint[] { new XPoint(x1, y1), new XPoint(x2, y2) });
         }
 
         // ----- DrawLines ----------------------------------------------------------------------------
@@ -127,18 +131,14 @@ namespace PdfSharpCore.Drawing.Pdf
         /// <summary>
         /// Strokes a series of connected points.
         /// </summary>
-        public void DrawLines(XPen pen, XPoint[] points)
+        public void AppendLine(XPoint[] points)
         {
-            if (pen == null)
-                throw new ArgumentNullException("pen");
             if (points == null)
                 throw new ArgumentNullException("points");
 
             int count = points.Length;
             if (count == 0)
                 return;
-
-            Realize(pen);
 
             const string format = Config.SignificantFigures4;
             AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", points[0].X, points[0].Y);
@@ -149,17 +149,15 @@ namespace PdfSharpCore.Drawing.Pdf
 
         // ----- DrawBezier ---------------------------------------------------------------------------
 
-        public void DrawBezier(XPen pen, double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
+        public void AppendBezier(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
         {
-            DrawBeziers(pen, new XPoint[] { new XPoint(x1, y1), new XPoint(x2, y2), new XPoint(x3, y3), new XPoint(x4, y4) });
+            AppendBeziers(new XPoint[] { new XPoint(x1, y1), new XPoint(x2, y2), new XPoint(x3, y3), new XPoint(x4, y4) });
         }
 
         // ----- DrawBeziers --------------------------------------------------------------------------
 
-        public void DrawBeziers(XPen pen, XPoint[] points)
+        public void AppendBeziers( XPoint[] points)
         {
-            if (pen == null)
-                throw new ArgumentNullException("pen");
             if (points == null)
                 throw new ArgumentNullException("points");
 
@@ -170,8 +168,6 @@ namespace PdfSharpCore.Drawing.Pdf
             if ((count - 1) % 3 != 0)
                 throw new ArgumentException("Invalid number of points for bezier curves. Number must fulfil 4+3n.", "points");
 
-            Realize(pen);
-
             const string format = Config.SignificantFigures4;
             AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", points[0].X, points[0].Y);
             for (int idx = 1; idx < count; idx += 3)
@@ -179,16 +175,12 @@ namespace PdfSharpCore.Drawing.Pdf
                     points[idx].X, points[idx].Y,
                     points[idx + 1].X, points[idx + 1].Y,
                     points[idx + 2].X, points[idx + 2].Y);
-
-            AppendStrokeFill(pen, null, XFillMode.Alternate, false);
         }
 
         // ----- DrawCurve ----------------------------------------------------------------------------
 
-        public void DrawCurve(XPen pen, XPoint[] points, double tension)
+        public void AppendCurve(XPoint[] points, double tension)
         {
-            if (pen == null)
-                throw new ArgumentNullException("pen");
             if (points == null)
                 throw new ArgumentNullException("points");
 
@@ -200,8 +192,6 @@ namespace PdfSharpCore.Drawing.Pdf
 
             // See http://pubpages.unh.edu/~cs770/a5/cardinal.html  // Link is down...
             tension /= 3;
-
-            Realize(pen);
 
             const string format = Config.SignificantFigures4;
             AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", points[0].X, points[0].Y);
@@ -217,69 +207,39 @@ namespace PdfSharpCore.Drawing.Pdf
                     AppendCurveSegment(points[idx - 1], points[idx], points[idx + 1], points[idx + 2], tension);
                 AppendCurveSegment(points[count - 3], points[count - 2], points[count - 1], points[count - 1], tension);
             }
-            AppendStrokeFill(pen, null, XFillMode.Alternate, false);
         }
 
         // ----- DrawArc ------------------------------------------------------------------------------
 
-        public void DrawArc(XPen pen, double x, double y, double width, double height, double startAngle, double sweepAngle)
+        public void AppendArc(double x, double y, double width, double height, double startAngle, double sweepAngle)
         {
-            if (pen == null)
-                throw new ArgumentNullException("pen");
-
-            Realize(pen);
 
             AppendPartialArc(x, y, width, height, startAngle, sweepAngle, PathStart.MoveTo1st, new XMatrix());
-            AppendStrokeFill(pen, null, XFillMode.Alternate, false);
         }
 
         // ----- DrawRectangle ------------------------------------------------------------------------
 
-        public void DrawRectangle(XPen pen, XBrush brush, double x, double y, double width, double height)
+        public void AppendRectangle(double x, double y, double width, double height)
         {
-            if (pen == null && brush == null)
-                throw new ArgumentNullException("pen and brush");
-
             const string format = Config.SignificantFigures3;
 
-            Realize(pen, brush);
             //AppendFormat123("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} re\n", x, y, width, -height);
             AppendFormatRect("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} re\n", x, y + height, width, height);
-
-            if (pen != null && brush != null)
-                _content.Append("B\n");
-            else if (pen != null)
-                _content.Append("S\n");
-            else
-                _content.Append("f\n");
-        }
-
-        // ----- DrawRectangles -----------------------------------------------------------------------
-
-        public void DrawRectangles(XPen pen, XBrush brush, XRect[] rects)
-        {
-            int count = rects.Length;
-            for (int idx = 0; idx < count; idx++)
-            {
-                XRect rect = rects[idx];
-                DrawRectangle(pen, brush, rect.X, rect.Y, rect.Width, rect.Height);
-            }
         }
 
         // ----- DrawRoundedRectangle -----------------------------------------------------------------
 
-        public void DrawRoundedRectangle(XPen pen, XBrush brush, double x, double y, double width, double height, double ellipseWidth, double ellipseHeight)
+        public void AppendRoundedRectangle(double x, double y, double width, double height, double ellipseWidth, double ellipseHeight)
         {
             XGraphicsPath path = new XGraphicsPath();
             path.AddRoundedRectangle(x, y, width, height, ellipseWidth, ellipseHeight);
-            DrawPath(pen, brush, path);
+            AppendPath(path);
         }
 
         // ----- DrawEllipse --------------------------------------------------------------------------
 
-        public void DrawEllipse(XPen pen, XBrush brush, double x, double y, double width, double height)
+        public void AppendEllipse(double x, double y, double width, double height)
         {
-            Realize(pen, brush);
 
             // Useful information is here http://home.t-online.de/home/Robert.Rossmair/ellipse.htm (note: link was dead on November 2, 2015)
             // or here http://www.whizkidtech.redprince.net/bezier/circle/
@@ -303,15 +263,12 @@ namespace PdfSharpCore.Drawing.Pdf
               x0 - δx, y0 - fy, x0 - fx, y0 - δy, x0, y0 - δy);
             AppendFormat3Points("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} {4:" + format + "} {5:" + format + "} c\n",
               x0 + fx, y0 - δy, x0 + δx, y0 - fy, x0 + δx, y0);
-            AppendStrokeFill(pen, brush, XFillMode.Winding, true);
         }
 
         // ----- DrawPolygon --------------------------------------------------------------------------
 
-        public void DrawPolygon(XPen pen, XBrush brush, XPoint[] points, XFillMode fillmode)
+        public void AppendPolygon(XPoint[] points, XFillMode fillmode)
         {
-            Realize(pen, brush);
-
             int count = points.Length;
             if (points.Length < 2)
                 throw new ArgumentException("points", PSSR.PointArrayAtLeast(2));
@@ -320,67 +277,8 @@ namespace PdfSharpCore.Drawing.Pdf
             AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", points[0].X, points[0].Y);
             for (int idx = 1; idx < count; idx++)
                 AppendFormatPoint("{0:" + format + "} {1:" + format + "} l\n", points[idx].X, points[idx].Y);
-
-            AppendStrokeFill(pen, brush, fillmode, true);
         }
 
-        // ----- DrawPie ------------------------------------------------------------------------------
-
-        public void DrawPie(XPen pen, XBrush brush, double x, double y, double width, double height,
-          double startAngle, double sweepAngle)
-        {
-            Realize(pen, brush);
-
-            const string format = Config.SignificantFigures4;
-            AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", x + width / 2, y + height / 2);
-            AppendPartialArc(x, y, width, height, startAngle, sweepAngle, PathStart.LineTo1st, new XMatrix());
-            AppendStrokeFill(pen, brush, XFillMode.Alternate, true);
-        }
-
-        // ----- DrawClosedCurve ----------------------------------------------------------------------
-
-        public void DrawClosedCurve(XPen pen, XBrush brush, XPoint[] points, double tension, XFillMode fillmode)
-        {
-            int count = points.Length;
-            if (count == 0)
-                return;
-            if (count < 2)
-                throw new ArgumentException("Not enough points.", "points");
-
-            // Simply tried out. Not proofed why it is correct.
-            tension /= 3;
-
-            Realize(pen, brush);
-
-            const string format = Config.SignificantFigures4;
-            AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", points[0].X, points[0].Y);
-            if (count == 2)
-            {
-                // Just draw a line.
-                AppendCurveSegment(points[0], points[0], points[1], points[1], tension);
-            }
-            else
-            {
-                AppendCurveSegment(points[count - 1], points[0], points[1], points[2], tension);
-                for (int idx = 1; idx < count - 2; idx++)
-                    AppendCurveSegment(points[idx - 1], points[idx], points[idx + 1], points[idx + 2], tension);
-                AppendCurveSegment(points[count - 3], points[count - 2], points[count - 1], points[0], tension);
-                AppendCurveSegment(points[count - 2], points[count - 1], points[0], points[1], tension);
-            }
-            AppendStrokeFill(pen, brush, fillmode, true);
-        }
-
-        // ----- DrawPath -----------------------------------------------------------------------------
-
-        public void DrawPath(XPen pen, XBrush brush, XGraphicsPath path)
-        {
-            if (pen == null && brush == null)
-                throw new ArgumentNullException("pen");
-
-            Realize(pen, brush);
-            AppendPath(path._corePath);
-            AppendStrokeFill(pen, brush, path.FillMode, false);
-        }
 
         // ----- DrawString ---------------------------------------------------------------------------
 
@@ -547,7 +445,7 @@ namespace PdfSharpCore.Drawing.Pdf
                 AdjustTextMatrix(ref pos);
                 AppendFormat2("{0:" + format2 + "} {1:" + format2 + "} Td {2} Tj\n", pos.X, pos.Y, text);
 #endif
-            if (underline)
+            /*if (underline)
             {
                 double underlinePosition = lineSpace * realizedFont.FontDescriptor._descriptor.UnderlinePosition / font.CellSpace;
                 double underlineThickness = lineSpace * realizedFont.FontDescriptor._descriptor.UnderlineThickness / font.CellSpace;
@@ -567,7 +465,7 @@ namespace PdfSharpCore.Drawing.Pdf
                     ? y - strikeoutPosition
                     : y + strikeoutPosition - strikeoutSize;
                 DrawRectangle(null, brush, x, strikeoutRectY, width, strikeoutSize);
-            }
+            }*/
         }
 
         // ----- DrawImage ----------------------------------------------------------------------------
@@ -1114,9 +1012,9 @@ namespace PdfSharpCore.Drawing.Pdf
         /// <summary>
         /// Appends the content of a GraphicsPath object.
         /// </summary>
-        internal void AppendPath(CoreGraphicsPath path)
+        public void AppendPath(XGraphicsPath path)
         {
-            AppendPath(path.PathPoints, path.PathTypes);
+            AppendPath(path._corePath.PathPoints, path._corePath.PathTypes);
             //XPoint[] points = path.PathPoints;
             //Byte[] types = path.PathTypes;
 
@@ -1286,29 +1184,31 @@ namespace PdfSharpCore.Drawing.Pdf
             _content.AppendFormat(CultureInfo.InvariantCulture, format, result.X, result.Y, width, height, name);
         }
 
-        void AppendStrokeFill(XPen pen, XBrush brush, XFillMode fillMode, bool closePath)
+        public void AppendStrokeAndFill(XFillMode fillMode, bool closePath = true)
         {
             if (closePath)
                 _content.Append("h ");
-
             if (fillMode == XFillMode.Winding)
-            {
-                if (pen != null && brush != null)
-                    _content.Append("B\n");
-                else if (pen != null)
-                    _content.Append("S\n");
-                else
-                    _content.Append("f\n");
-            }
+                _content.Append("B\n");
             else
-            {
-                if (pen != null && brush != null)
-                    _content.Append("B*\n");
-                else if (pen != null)
-                    _content.Append("S\n");
-                else
-                    _content.Append("f*\n");
-            }
+                _content.Append("B*\n");
+        }
+
+        public void AppendStroke(bool closePath = true)
+        {
+            if (closePath)
+                _content.Append("h ");
+            _content.Append("S\n");
+        }
+
+        public void AppendFill(XFillMode fillMode, bool closePath = true)
+        {
+            if (closePath)
+                _content.Append("h ");
+            if (fillMode == XFillMode.Winding)
+                _content.Append("f\n");
+            else
+                _content.Append("f*\n");
         }
         #endregion
 

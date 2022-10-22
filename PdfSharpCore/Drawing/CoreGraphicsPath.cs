@@ -35,8 +35,9 @@ namespace PdfSharpCore.Drawing
 {
     /// <summary>
     /// Represents a graphics path that uses the same notation as GDI+.
+    /// CHANGED TO PUBLIC (JAMES HOUX. it was internal). NO OTHER CHANGES MADE
     /// </summary>
-    internal class CoreGraphicsPath
+    public class CoreGraphicsPath
     {
         // Same values as GDI+ uses.
         const byte PathPointTypeStart = 0;  // move

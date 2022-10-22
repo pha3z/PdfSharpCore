@@ -55,6 +55,19 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
     /// </summary>
     public sealed class XGraphics : IDisposable
     {
+        #region NEW CODE FROM JAMES
+
+        /// <summary>
+        /// publicized AppendPath
+        /// <br/>Allows you to append a path.
+        /// </summary>
+        public void AppendPath(XGraphicsPath path) => _renderer.AppendPath(path);
+        public void AppendStrokeAndFill(XFillMode fillMode, bool closePath = true) => _renderer.AppendStrokeAndFill(fillMode, closePath);
+        public void AppendStroke(bool closePath = true) => _renderer.AppendStroke(closePath);
+        public void AppendFill(XFillMode fillMode, bool closePath = true) => _renderer.AppendFill(fillMode, closePath);
+
+        #endregion
+
         /// <summary>
         /// Initializes a new instance of the XGraphics class for drawing on a PDF page.
         /// </summary>

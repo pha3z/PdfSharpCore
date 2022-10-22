@@ -37,6 +37,9 @@ namespace PdfSharpCore.Drawing
     /// </summary>
     public sealed class XGraphicsPath
     {
+        /// <summary>ADDED BY JAMES HOUX.</summary>
+        public CoreGraphicsPath GetCorePath() => _corePath;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="XGraphicsPath"/> class.
         /// </summary>
