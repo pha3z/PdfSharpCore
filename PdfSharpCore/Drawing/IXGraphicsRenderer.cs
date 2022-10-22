@@ -86,7 +86,7 @@ namespace PdfSharpCore.Drawing
         /// <summary>
         /// Draws a polygon.
         /// </summary>
-        void AppendPolygon(XPoint[] points, XFillMode fillmode);
+        void AppendPolygon(XPoint[] points);
 
         /// <summary>
         /// Draws a graphical path.

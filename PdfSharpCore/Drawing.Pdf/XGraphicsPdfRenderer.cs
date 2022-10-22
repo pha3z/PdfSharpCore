@@ -267,7 +267,7 @@ namespace PdfSharpCore.Drawing.Pdf
 
         // ----- DrawPolygon --------------------------------------------------------------------------
 
-        public void AppendPolygon(XPoint[] points, XFillMode fillmode)
+        public void AppendPolygon(XPoint[] points)
         {
             int count = points.Length;
             if (points.Length < 2)
