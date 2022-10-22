@@ -91,124 +91,148 @@ namespace PdfSharpCore.Drawing.Pdf
         XColor _realizedStrokeColor = XColor.Empty;
         bool _realizedStrokeOverPrint;
 
+        const string fmt2 = Config.SignificantFigures2;
+        const string fmt3 = Config.SignificantFigures3;
+
+        public void SetStrokeWidth(double width)
+        {
+            _renderer.AppendFormatArgs("{0:" + fmt3 + "} w\n", width);
+            _realizedLineWith = width;
+        }
+
+        public void SetLineCap(XLineCap xlc)
+        {
+            _renderer.AppendFormatArgs("{0} J\n", (int)xlc);
+            _realizedLineCap = (int)xlc;
+        }
+
+        public void SetLineJoin(XLineJoin xlj)
+        {
+            _renderer.AppendFormatArgs("{0} j\n", (int)xlj);
+            _realizedLineJoin = (int)xlj;
+        }
+
+        public void SetMiterLimit(double miterLimit)
+        {
+            _renderer.AppendFormatInt("{0} M\n", (int)miterLimit);
+            _realizedMiterLimit = (int)miterLimit;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pen">Color and Brush properties will be ignored. Only the properties relevant to dash pattern will have effect.</param>
+        public void SetDashStyle(XPen pen)
+        {
+            double dot = pen.Width;
+            double dash = 3 * dot;
+
+            // Line width 0 is not recommended but valid.
+            XDashStyle dashStyle = pen.DashStyle;
+            if (dot == 0)
+                dashStyle = XDashStyle.Solid;
+
+            switch (dashStyle)
+            {
+                case XDashStyle.Solid:      _renderer.Append("[]0 d\n"); break;
+                case XDashStyle.Dash:       _renderer.AppendFormatArgs("[{0:" + fmt2 + "} {1:" + fmt2 + "}]0 d\n", dash, dot); break;
+                case XDashStyle.Dot:        _renderer.AppendFormatArgs("[{0:" + fmt2 + "}]0 d\n", dot); break;
+                case XDashStyle.DashDot:    _renderer.AppendFormatArgs("[{0:" + fmt2 + "} {1:" + fmt2 + "} {1:" + fmt2 + "} {1:" + fmt2 + "}]0 d\n", dash, dot); break;
+                case XDashStyle.DashDotDot: _renderer.AppendFormatArgs("[{0:" + fmt2 + "} {1:" + fmt2 + "} {1:" + fmt2 + "} {1:" + fmt2 + "} {1:" + fmt2 + "} {1:" + fmt2 + "}]0 d\n", dash, dot); break;
+                case XDashStyle.Custom:
+                    {
+                        StringBuilder pdf = new StringBuilder("[", 256);
+                        int len = pen._dashPattern == null ? 0 : pen._dashPattern.Length;
+                        for (int idx = 0; idx < len; idx++)
+                        {
+                            if (idx > 0)
+                                pdf.Append(' ');
+                            pdf.Append(PdfEncoders.ToString(pen._dashPattern[idx] * pen._width));
+                        }
+                        // Make an even number of values look like in GDI+
+                        if (len > 0 && len % 2 == 1)
+                        {
+                            pdf.Append(' ');
+                            pdf.Append(PdfEncoders.ToString(0.2 * pen._width));
+                        }
+                        pdf.AppendFormat(CultureInfo.InvariantCulture, "]{0:" + fmt3 + "} d\n", pen._dashOffset * pen._width);
+                        string pattern = pdf.ToString();
+
+                        // BUG: drice2@ageone.de reported a realizing problem
+                        // HACK: I remove the if clause
+                        //if (_realizedDashPattern != pattern)
+                        {
+                            _realizedDashPattern = pattern;
+                            _renderer.Append(pattern);
+                        }
+                    }
+                    break;
+            }
+            _realizedDashStyle = dashStyle;
+        }
+
+        public void SetStrokeColor(XColor color, PdfColorMode colorMode)
+        {
+            if (colorMode != PdfColorMode.Cmyk)
+            {
+                _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Rgb));
+                _renderer.Append(" RG\n");
+            }
+            else
+            {
+                _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Cmyk));
+                _renderer.Append(" K\n");
+            }
+            _realizedStrokeColor = color;
+        }
+
+        public void SetFillColor(XColor color, PdfColorMode colorMode)
+        {
+            if (colorMode != PdfColorMode.Cmyk)
+            {
+                _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Rgb));
+                _renderer.Append(" rg\n");
+            }
+            else
+            {
+                _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Cmyk));
+                _renderer.Append(" k\n");
+            }
+            _realizedFillColor = color;
+        }
+
         public void RealizePen(XPen pen, PdfColorMode colorMode)
         {
-            const string frmt2 = Config.SignificantFigures2;
-            const string format = Config.SignificantFigures3;
+            
             XColor color = pen.Color;
             bool overPrint = pen.Overprint;
             color = ColorSpaceHelper.EnsureColorMode(colorMode, color);
 
             if (_realizedLineWith != pen._width)
-            {
-                _renderer.AppendFormatArgs("{0:" + format + "} w\n", pen._width);
-                _realizedLineWith = pen._width;
-            }
-
+                SetStrokeWidth(pen._width);
             if (_realizedLineCap != (int)pen._lineCap)
-            {
-                _renderer.AppendFormatArgs("{0} J\n", (int)pen._lineCap);
-                _realizedLineCap = (int)pen._lineCap;
-            }
-
+                SetLineCap(pen._lineCap);
             if (_realizedLineJoin != (int)pen._lineJoin)
-            {
-                _renderer.AppendFormatArgs("{0} j\n", (int)pen._lineJoin);
-                _realizedLineJoin = (int)pen._lineJoin;
-            }
+                SetLineJoin(pen._lineJoin);
 
             if (_realizedLineCap == (int)XLineJoin.Miter)
             {
                 if (_realizedMiterLimit != (int)pen._miterLimit && (int)pen._miterLimit != 0)
-                {
-                    _renderer.AppendFormatInt("{0} M\n", (int)pen._miterLimit);
-                    _realizedMiterLimit = (int)pen._miterLimit;
-                }
+                    SetMiterLimit(pen._miterLimit);
             }
 
             if (_realizedDashStyle != pen._dashStyle || pen._dashStyle == XDashStyle.Custom)
-            {
-                double dot = pen.Width;
-                double dash = 3 * dot;
+                SetDashStyle(pen);
 
-                // Line width 0 is not recommended but valid.
-                XDashStyle dashStyle = pen.DashStyle;
-                if (dot == 0)
-                    dashStyle = XDashStyle.Solid;
-
-                switch (dashStyle)
-                {
-                    case XDashStyle.Solid:
-                        _renderer.Append("[]0 d\n");
-                        break;
-
-                    case XDashStyle.Dash:
-                        _renderer.AppendFormatArgs("[{0:" + frmt2 + "} {1:" + frmt2 + "}]0 d\n", dash, dot);
-                        break;
-
-                    case XDashStyle.Dot:
-                        _renderer.AppendFormatArgs("[{0:" + frmt2 + "}]0 d\n", dot);
-                        break;
-
-                    case XDashStyle.DashDot:
-                        _renderer.AppendFormatArgs("[{0:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "}]0 d\n", dash, dot);
-                        break;
-
-                    case XDashStyle.DashDotDot:
-                        _renderer.AppendFormatArgs("[{0:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "} {1:" + frmt2 + "}]0 d\n", dash, dot);
-                        break;
-
-                    case XDashStyle.Custom:
-                        {
-                            StringBuilder pdf = new StringBuilder("[", 256);
-                            int len = pen._dashPattern == null ? 0 : pen._dashPattern.Length;
-                            for (int idx = 0; idx < len; idx++)
-                            {
-                                if (idx > 0)
-                                    pdf.Append(' ');
-                                pdf.Append(PdfEncoders.ToString(pen._dashPattern[idx] * pen._width));
-                            }
-                            // Make an even number of values look like in GDI+
-                            if (len > 0 && len % 2 == 1)
-                            {
-                                pdf.Append(' ');
-                                pdf.Append(PdfEncoders.ToString(0.2 * pen._width));
-                            }
-                            pdf.AppendFormat(CultureInfo.InvariantCulture, "]{0:" + format + "} d\n", pen._dashOffset * pen._width);
-                            string pattern = pdf.ToString();
-
-                            // BUG: drice2@ageone.de reported a realizing problem
-                            // HACK: I remove the if clause
-                            //if (_realizedDashPattern != pattern)
-                            {
-                                _realizedDashPattern = pattern;
-                                _renderer.Append(pattern);
-                            }
-                        }
-                        break;
-                }
-                _realizedDashStyle = dashStyle;
-            }
-
-            if (pen.Brush != null)
-            {
-                RealizeBrush(pen.Brush, colorMode, 0, 0, true);
-            }
-            else if (colorMode != PdfColorMode.Cmyk)
+            if (colorMode != PdfColorMode.Cmyk)
             {
                 if (_realizedStrokeColor.Rgb != color.Rgb)
-                {
-                    _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Rgb));
-                    _renderer.Append(" RG\n");
-                }
+                    SetStrokeColor(color, PdfColorMode.Rgb);
             }
             else
             {
                 if (!ColorSpaceHelper.IsEqualCmyk(_realizedStrokeColor, color))
-                {
-                    _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Cmyk));
-                    _renderer.Append(" K\n");
-                }
+                    SetStrokeColor(color, PdfColorMode.Cmyk);
             }
 
             if (_renderer.Owner.Version >= 14 && (_realizedStrokeColor.A != color.A || _realizedStrokeOverPrint != overPrint))
@@ -221,7 +245,7 @@ namespace PdfSharpCore.Drawing.Pdf
                 if (_renderer._page != null && color.A < 1)
                     _renderer._page.TransparencyUsed = true;
             }
-            _realizedStrokeColor = color;
+            
             _realizedStrokeOverPrint = overPrint;
         }
 
@@ -293,20 +317,14 @@ namespace PdfSharpCore.Drawing.Pdf
             if (colorMode != PdfColorMode.Cmyk)
             {
                 if (_realizedFillColor.IsEmpty || _realizedFillColor.Rgb != color.Rgb)
-                {
-                    _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Rgb));
-                    _renderer.Append(" rg\n");
-                }
+                    SetFillColor(color, colorMode);
             }
             else
             {
                 Debug.Assert(colorMode == PdfColorMode.Cmyk);
 
                 if (_realizedFillColor.IsEmpty || !ColorSpaceHelper.IsEqualCmyk(_realizedFillColor, color))
-                {
-                    _renderer.Append(PdfEncoders.ToString(color, PdfColorMode.Cmyk));
-                    _renderer.Append(" k\n");
-                }
+                    SetFillColor(color, colorMode);
             }
 
             if (_renderer.Owner.Version >= 14 && (_realizedFillColor.A != color.A || _realizedNonStrokeOverPrint != overPrint))

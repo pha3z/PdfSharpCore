@@ -27,6 +27,8 @@
 // DEALINGS IN THE SOFTWARE.
 #endregion
 
+using PdfSharpCore.Pdf;
+
 namespace PdfSharpCore.Drawing
 {
     /// <summary>
@@ -106,6 +108,15 @@ namespace PdfSharpCore.Drawing
         /// </summary>
         void DrawImage(XImage image, double x, double y, double width, double height);
         void DrawImage(XImage image, XRect destRect, XRect srcRect, XGraphicsUnit srcUnit);
+
+        void SetStrokeWidth(double width);
+        void SetLineCap(XLineCap xlc);
+        void SetLineJoin(XLineJoin xlj);
+        void SetMiterLimit(double miterLimit);
+        void SetDashStyle(XPen pen);
+        void SetStrokeColor(XColor color, PdfColorMode colorMode);
+        void SetFillColor(XColor color, PdfColorMode colorMode);
+        PdfColorMode GetColorMode();
 
         #endregion
 

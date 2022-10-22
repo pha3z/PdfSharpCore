@@ -57,6 +57,8 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
     {
         #region NEW CODE FROM JAMES
 
+        public PdfColorMode GetColorMode() => _renderer.GetColorMode();
+
         void StrokeAndFill(XPen pen, XBrush brush, XFillMode fillmode)
         {
             _renderer.Realize(pen, brush);
@@ -76,6 +78,19 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
         public void AppendStrokeAndFill(XFillMode fillMode, bool closePath = true) => _renderer.AppendStrokeAndFill(fillMode, closePath);
         public void AppendStroke(bool closePath = true) => _renderer.AppendStroke(closePath);
         public void AppendFill(XFillMode fillMode, bool closePath = true) => _renderer.AppendFill(fillMode, closePath);
+
+        public void SetStrokeWidth(double width) => _renderer.SetStrokeWidth(width);
+        public void SetLineCap(XLineCap xlc) => _renderer.SetLineCap(xlc);
+        public void SetLineJoin(XLineJoin xlj) => _renderer.SetLineJoin(xlj);
+        public void SetMiterLimit(double miterLimit) => _renderer.SetMiterLimit(miterLimit);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pen">Color and Brush properties are ignored. Only the properties relevant to dash pattern have effect.</param>
+        public void SetDashStyle(XPen pen) => _renderer.SetDashStyle(pen);
+        public void SetStrokeColor(XColor color) => _renderer.SetStrokeColor(color, _renderer.GetColorMode());
+        public void SetFillColor(XColor color) => _renderer.SetFillColor(color, _renderer.GetColorMode());
+
 
         #endregion
 
@@ -583,7 +598,7 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 throw new ArgumentNullException("pen and brush", PSSR.NeedPenOrBrush);
 
             _renderer.AppendRectangle(x, y, width, height);
-            StrokeAndFill(pen, brush, XFillMode.Alternate);
+            StrokeAndFill(pen, brush, XFillMode.Winding);
         }
 
         public void DrawRoundedRectangle(XPen pen, XRect rect, XSize ellipseSize) => DrawRoundedRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height, ellipseSize.Width, ellipseSize.Height);
@@ -598,7 +613,7 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 throw new ArgumentNullException("pen and brush", PSSR.NeedPenOrBrush);
 
             _renderer.AppendRoundedRectangle(x, y, width, height, ellipseWidth, ellipseHeight);
-            StrokeAndFill(pen, brush, XFillMode.Alternate);
+            StrokeAndFill(pen, brush, XFillMode.Winding);
         }
 
         public void DrawPath(XPen pen, XGraphicsPath path) => DrawPath(pen, null, path);
@@ -662,7 +677,7 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
         /// <summary>
         /// Draws a polygon defined by an array of points.
         /// </summary>
-        public void DrawPolygon(XPen pen, XPoint[] points) => DrawPolygon(pen, null, points, XFillMode.Alternate);
+        public void DrawPolygon(XPen pen, XPoint[] points) => DrawPolygon(pen, null, points, XFillMode.Winding);
         public void DrawPolygon(XBrush brush, XPoint[] points, XFillMode fillmode) => DrawPolygon(null, brush, points, fillmode);
         public void DrawPolygon(XPen pen, XBrush brush, XPoint[] points, XFillMode fillmode)
         {
@@ -697,11 +712,11 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
 
             _renderer.Realize(pen, brush);
             if (pen != null && brush != null)
-                _renderer.AppendStrokeAndFill(XFillMode.Alternate);
+                _renderer.AppendStrokeAndFill(XFillMode.Winding);
             else if (pen != null)
                 _renderer.AppendStroke();
             else
-                _renderer.AppendFill(XFillMode.Alternate);
+                _renderer.AppendFill(XFillMode.Winding);
 
         }
 

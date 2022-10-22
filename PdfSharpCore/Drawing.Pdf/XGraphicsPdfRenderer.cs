@@ -114,6 +114,18 @@ namespace PdfSharpCore.Drawing.Pdf
 
         #region  Drawing
 
+        public void SetStrokeWidth(double width) => _gfxState.SetStrokeWidth(width);
+        public void SetLineCap(XLineCap xlc) => _gfxState.SetLineCap(xlc);
+        public void SetLineJoin(XLineJoin xlj) => _gfxState.SetLineJoin(xlj);
+        public void SetMiterLimit(double miterLimit) => _gfxState.SetMiterLimit(miterLimit);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pen">Color and Brush properties are ignored. Only the properties relevant to dash pattern have effect.</param>
+        public void SetDashStyle(XPen pen) => _gfxState.SetDashStyle(pen);
+        public void SetStrokeColor(XColor color, PdfColorMode colorMode) => _gfxState.SetStrokeColor(color, colorMode);
+        public void SetFillColor(XColor color, PdfColorMode colorMode) => _gfxState.SetFillColor(color, colorMode);
+
         //void SetPageLayout(down, point(0, 0), unit
 
         // ----- DrawLine -----------------------------------------------------------------------------
@@ -1612,8 +1624,12 @@ namespace PdfSharpCore.Drawing.Pdf
             return _form.GetFormName(form);
         }
 
+        
         internal PdfPage _page;
         internal XForm _form;
+
+        /// <summary>Added by James Houx so we can get PdfPage details where we need them for decision making.</summary>
+        public PdfColorMode GetColorMode() => _colorMode;
         internal PdfColorMode _colorMode;
         XGraphicsPdfPageOptions _options;
         XGraphics _gfx;
