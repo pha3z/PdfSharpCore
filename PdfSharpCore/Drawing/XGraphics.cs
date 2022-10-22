@@ -572,8 +572,8 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 throw new ArgumentNullException("pen and brush", PSSR.NeedPenOrBrush);
 
             _renderer.AppendRectangle(x, y, width, height);
-            _renderer.Realize(pen, brush);
 
+            _renderer.Realize(pen, brush);
             if (pen != null && brush != null)
                 _renderer.AppendStrokeAndFill(XFillMode.Alternate);
             else if (pen != null)
@@ -581,6 +581,30 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
             else
                 _renderer.AppendFill(XFillMode.Alternate);   
         }
+
+        public void DrawPath(XPen pen, XGraphicsPath path) => DrawPath(pen, null, path);
+        public void DrawPath(XBrush brush, XGraphicsPath path) => DrawPath(null, brush, path);
+        public void DrawPath(XPen pen, XBrush brush, XGraphicsPath path)
+        {
+            if (pen == null && brush == null)
+            {
+                // ReSharper disable once NotResolvedInText
+                throw new ArgumentNullException("pen and brush", PSSR.NeedPenOrBrush);
+            }
+            if (path == null)
+                throw new ArgumentNullException("path");
+
+            _renderer.AppendPath(path);
+
+            _renderer.Realize(pen, brush);
+            if (pen != null && brush != null)
+                _renderer.AppendStrokeAndFill(XFillMode.Alternate);
+            else if (pen != null)
+                _renderer.AppendStroke();
+            else
+                _renderer.AppendFill(XFillMode.Alternate);
+        }
+
 
         /// <summary>
         /// Draws the specified text string.
