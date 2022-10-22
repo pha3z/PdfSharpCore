@@ -583,7 +583,7 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 throw new ArgumentNullException("pen and brush", PSSR.NeedPenOrBrush);
 
             _renderer.AppendRectangle(x, y, width, height);
-            StrokeAndFill(pen, brush);
+            StrokeAndFill(pen, brush, XFillMode.Alternate);
         }
 
         public void DrawPath(XPen pen, XGraphicsPath path) => DrawPath(pen, null, path);
@@ -599,7 +599,7 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 throw new ArgumentNullException("path");
 
             _renderer.AppendPath(path); 
-            StrokeAndFill(pen, brush);
+            StrokeAndFill(pen, brush, path.FillMode);
         }
 
         public void DrawLine(XPen pen, XPoint pt1, XPoint pt2) => DrawLine(pen, pt1.X, pt1.Y, pt2.X, pt2.Y);
