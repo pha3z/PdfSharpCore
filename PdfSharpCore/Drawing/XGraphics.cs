@@ -605,6 +605,75 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 _renderer.AppendFill(XFillMode.Alternate);
         }
 
+        public void DrawLine(XPen pen, XPoint pt1, XPoint pt2) => DrawLine(pen, pt1.X, pt1.Y, pt2.X, pt2.Y);
+        public void DrawLine(XPen pen, double x1, double y1, double x2, double y2) => DrawLines(pen, new XPoint[] { new XPoint(x1, y1), new XPoint(x2, y2) });
+
+        /// <summary>Draws a series of line segments that connect an array of points.</summary>
+        public void DrawLines(XPen pen, XPoint[] points)
+        {
+            if (pen == null)
+                throw new ArgumentNullException("pen");
+            if (points == null)
+                throw new ArgumentNullException("points");
+            if (points.Length < 2)
+                throw new ArgumentException("points", PSSR.PointArrayAtLeast(2));
+
+            for (var i = 0; i < points.Length - 1; i++)
+            {
+                var p = points[i];
+                var p2 = points[i + 1];
+                _renderer.AppendLine(p.X, p.Y, p2.X, p2.Y);
+                _renderer.AppendStroke();
+            }
+        }
+
+        /// <summary>Draws a series of line segments that connect an array of x and y pairs.</summary>
+        public void DrawLines(XPen pen, double x, double y, params double[] value)
+        {
+            if (pen == null)
+                throw new ArgumentNullException("pen");
+            if (value == null)
+                throw new ArgumentNullException("value");
+
+            int length = value.Length;
+            XPoint[] points = new XPoint[length / 2 + 1];
+            points[0].X = x;
+            points[0].Y = y;
+            for (int idx = 0; idx < length / 2; idx++)
+            {
+                points[idx + 1].X = value[2 * idx];
+                points[idx + 1].Y = value[2 * idx + 1];
+            }
+            DrawLines(pen, points);
+        }
+
+        /// <summary>Draws a pie defined by an ellipse.</summary>
+        public void DrawPie(XPen pen, XRect rect, double startAngle, double sweepAngle) => DrawPie(pen, rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle);
+        /// <summary>Draws a pie defined by an ellipse.</summary>
+        public void DrawPie(XPen pen, double x, double y, double width, double height, double startAngle, double sweepAngle) => DrawPie(pen, null, x, y, width, height, startAngle, sweepAngle);
+        /// <summary>Draws a pie defined by an ellipse.</summary>
+        public void DrawPie(XBrush brush, XRect rect, double startAngle, double sweepAngle) => DrawPie(null, brush, rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle);
+        /// <summary>Draws a pie defined by an ellipse.</summary>
+        public void DrawPie(XBrush brush, double x, double y, double width, double height, double startAngle, double sweepAngle)=> DrawPie(null, brush, x, y, width, height, startAngle, sweepAngle);
+        /// <summary>Draws a pie defined by an ellipse.</summary>
+        public void DrawPie(XPen pen, XBrush brush, XRect rect, double startAngle, double sweepAngle) => DrawPie(pen, brush, rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle);
+        /// <summary>Draws a pie defined by an ellipse.</summary>
+        public void DrawPie(XPen pen, XBrush brush, double x, double y, double width, double height, double startAngle, double sweepAngle)
+        {
+            if (pen == null && brush == null)
+                throw new ArgumentNullException("pen", PSSR.NeedPenOrBrush);
+
+            _renderer.AppendPie(x, y, width, height, startAngle, sweepAngle);
+
+            _renderer.Realize(pen, brush);
+            if (pen != null && brush != null)
+                _renderer.AppendStrokeAndFill(XFillMode.Alternate);
+            else if (pen != null)
+                _renderer.AppendStroke();
+            else
+                _renderer.AppendFill(XFillMode.Alternate);
+
+        }
 
         /// <summary>
         /// Draws the specified text string.
