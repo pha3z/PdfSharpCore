@@ -586,6 +586,21 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
             StrokeAndFill(pen, brush, XFillMode.Alternate);
         }
 
+        public void DrawRoundedRectangle(XPen pen, XRect rect, XSize ellipseSize) => DrawRoundedRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height, ellipseSize.Width, ellipseSize.Height);
+        public void DrawRoundedRectangle(XPen pen, double x, double y, double width, double height, double ellipseWidth, double ellipseHeight) => DrawRoundedRectangle(pen, null, x, y, width, height, ellipseWidth, ellipseHeight);
+        public void DrawRoundedRectangle(XBrush brush, XRect rect, XSize ellipseSize) => DrawRoundedRectangle(brush, rect.X, rect.Y, rect.Width, rect.Height, ellipseSize.Width, ellipseSize.Height);
+        public void DrawRoundedRectangle(XBrush brush, double x, double y, double width, double height, double ellipseWidth, double ellipseHeight) => DrawRoundedRectangle(null, brush, x, y, width, height, ellipseWidth, ellipseHeight);
+        public void DrawRoundedRectangle(XPen pen, XBrush brush, XRect rect, XSize ellipseSize) => DrawRoundedRectangle(pen, brush, rect.X, rect.Y, rect.Width, rect.Height, ellipseSize.Width, ellipseSize.Height);
+        public void DrawRoundedRectangle(XPen pen, XBrush brush, double x, double y, double width, double height,
+            double ellipseWidth, double ellipseHeight)
+        {
+            if (pen == null && brush == null)
+                throw new ArgumentNullException("pen and brush", PSSR.NeedPenOrBrush);
+
+            _renderer.AppendRoundedRectangle(x, y, width, height, ellipseWidth, ellipseHeight);
+            StrokeAndFill(pen, brush, XFillMode.Alternate);
+        }
+
         public void DrawPath(XPen pen, XGraphicsPath path) => DrawPath(pen, null, path);
         public void DrawPath(XBrush brush, XGraphicsPath path) => DrawPath(null, brush, path);
         public void DrawPath(XPen pen, XBrush brush, XGraphicsPath path)
