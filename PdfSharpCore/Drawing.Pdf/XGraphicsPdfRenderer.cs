@@ -280,6 +280,15 @@ namespace PdfSharpCore.Drawing.Pdf
         }
 
 
+        // ----- DrawPie ------------------------------------------------------------------------------
+
+        public void AppendPie(double x, double y, double width, double height, double startAngle, double sweepAngle)
+        {
+            const string format = Config.SignificantFigures4;
+            AppendFormatPoint("{0:" + format + "} {1:" + format + "} m\n", x + width / 2, y + height / 2);
+            AppendPartialArc(x, y, width, height, startAngle, sweepAngle, PathStart.LineTo1st, new XMatrix());
+        }
+
         // ----- DrawString ---------------------------------------------------------------------------
 
         public void DrawString(string s, XFont font, XBrush brush, XRect rect, XStringFormat format)

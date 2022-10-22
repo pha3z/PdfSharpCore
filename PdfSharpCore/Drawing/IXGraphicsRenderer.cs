@@ -38,6 +38,9 @@ namespace PdfSharpCore.Drawing
 
         #region Drawing
 
+        void Realize(XPen pen, XBrush brush);
+        void AppendPie(double x, double y, double width, double height, double startAngle, double sweepAngle);
+
         void AppendStrokeAndFill(XFillMode fillMode, bool closePath = true);
         void AppendStroke(bool closePath = true);
         void AppendFill(XFillMode fillMode, bool closePath = true);
@@ -155,7 +158,6 @@ namespace PdfSharpCore.Drawing
         /// Writes a comment to the output stream. Comments have no effect on the rendering of the output.
         /// </summary>
         void WriteComment(string comment);
-        void Realize(XPen pen, XBrush brush);
 
         #endregion
     }
