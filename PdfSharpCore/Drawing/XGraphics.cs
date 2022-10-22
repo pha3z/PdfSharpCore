@@ -57,6 +57,17 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
     {
         #region NEW CODE FROM JAMES
 
+        void StrokeAndFill(XPen pen, XBrush brush, XFillMode fillmode)
+        {
+            _renderer.Realize(pen, brush);
+            if (pen != null && brush != null)
+                _renderer.AppendStrokeAndFill(fillmode);
+            else if (pen != null)
+                _renderer.AppendStroke();
+            else
+                _renderer.AppendFill(fillmode);
+        }
+
         /// <summary>
         /// publicized AppendPath
         /// <br/>Allows you to append a path.
@@ -572,14 +583,7 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 throw new ArgumentNullException("pen and brush", PSSR.NeedPenOrBrush);
 
             _renderer.AppendRectangle(x, y, width, height);
-
-            _renderer.Realize(pen, brush);
-            if (pen != null && brush != null)
-                _renderer.AppendStrokeAndFill(XFillMode.Alternate);
-            else if (pen != null)
-                _renderer.AppendStroke();
-            else
-                _renderer.AppendFill(XFillMode.Alternate);   
+            StrokeAndFill(pen, brush);
         }
 
         public void DrawPath(XPen pen, XGraphicsPath path) => DrawPath(pen, null, path);
@@ -594,15 +598,8 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
             if (path == null)
                 throw new ArgumentNullException("path");
 
-            _renderer.AppendPath(path);
-
-            _renderer.Realize(pen, brush);
-            if (pen != null && brush != null)
-                _renderer.AppendStrokeAndFill(XFillMode.Alternate);
-            else if (pen != null)
-                _renderer.AppendStroke();
-            else
-                _renderer.AppendFill(XFillMode.Alternate);
+            _renderer.AppendPath(path); 
+            StrokeAndFill(pen, brush);
         }
 
         public void DrawLine(XPen pen, XPoint pt1, XPoint pt2) => DrawLine(pen, pt1.X, pt1.Y, pt2.X, pt2.Y);
@@ -645,6 +642,24 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 points[idx + 1].Y = value[2 * idx + 1];
             }
             DrawLines(pen, points);
+        }
+
+        /// <summary>
+        /// Draws a polygon defined by an array of points.
+        /// </summary>
+        public void DrawPolygon(XPen pen, XPoint[] points) => DrawPolygon(pen, null, points, XFillMode.Alternate);
+        public void DrawPolygon(XBrush brush, XPoint[] points, XFillMode fillmode) => DrawPolygon(null, brush, points, fillmode);
+        public void DrawPolygon(XPen pen, XBrush brush, XPoint[] points, XFillMode fillmode)
+        {
+            if (pen == null && brush == null)
+                throw new ArgumentNullException("pen and brush", PSSR.NeedPenOrBrush);
+            if (points == null)
+                throw new ArgumentNullException("points");
+            if (points.Length < 2)
+                throw new ArgumentException("points", PSSR.PointArrayAtLeast(2));
+
+            _renderer.AppendPolygon(points);
+            StrokeAndFill(pen, brush, fillmode);
         }
 
         /// <summary>Draws a pie defined by an ellipse.</summary>
