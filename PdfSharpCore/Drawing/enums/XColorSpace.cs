@@ -27,6 +27,10 @@
 // DEALINGS IN THE SOFTWARE.
 #endregion
 
+using PdfSharpCore.Pdf;
+using System;
+using System.Runtime.CompilerServices;
+
 namespace PdfSharpCore.Drawing
 {
     ///<summary>
@@ -48,5 +52,18 @@ namespace PdfSharpCore.Drawing
         /// Identifies the gray scale color space.
         /// </summary>
         GrayScale,
+    }
+
+    public static class XColorSpaceExt
+    {
+        public static PdfColorMode ToPdfColorMode(this XColorSpace xcs)
+        {
+            return xcs switch
+            {
+                XColorSpace.Rgb => PdfColorMode.Rgb,
+                XColorSpace.Cmyk => PdfColorMode.Cmyk,
+                _ => throw new NotImplementedException($"{nameof(PdfColorMode)} does not support grayscale.");
+            };
+        }
     }
 }
