@@ -250,6 +250,12 @@ namespace PdfSharpCore.Drawing.Pdf
 
         // ----- DrawEllipse --------------------------------------------------------------------------
 
+        public void AppendCircle(double x, double y, double radius)
+        {
+            double diameter = radius * 2;
+            AppendEllipse(x, y, diameter, diameter);
+        }
+
         public void AppendEllipse(double x, double y, double width, double height)
         {
 
