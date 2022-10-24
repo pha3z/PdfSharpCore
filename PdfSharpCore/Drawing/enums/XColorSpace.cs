@@ -62,7 +62,7 @@ namespace PdfSharpCore.Drawing
             {
                 XColorSpace.Rgb => PdfColorMode.Rgb,
                 XColorSpace.Cmyk => PdfColorMode.Cmyk,
-                _ => throw new NotImplementedException($"{nameof(PdfColorMode)} does not support grayscale.");
+                _ => throw new NotImplementedException($"{nameof(PdfColorMode)} does not support grayscale.")
             };
         }
     }
