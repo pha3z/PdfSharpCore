@@ -38,8 +38,6 @@ namespace PdfSharpCore.Drawing
     {
         void Close();
 
-        #region Drawing
-
         void Realize(XPen pen, XBrush brush);
         void AppendPie(double x, double y, double width, double height, double startAngle, double sweepAngle);
 
@@ -118,10 +116,6 @@ namespace PdfSharpCore.Drawing
         void SetFillColor(XColor color, PdfColorMode colorMode);
         PdfColorMode GetColorMode();
 
-        #endregion
-
-        #region Save and Restore
-
         /// <summary>
         /// Saves the current graphics state without changing it.
         /// </summary>
@@ -142,10 +136,6 @@ namespace PdfSharpCore.Drawing
         /// </summary>
         void EndContainer(XGraphicsContainer container);
 
-        #endregion
-
-        #region Transformation
-
         /// <summary>
         /// Gets or sets the transformation matrix.
         /// </summary>
@@ -153,23 +143,15 @@ namespace PdfSharpCore.Drawing
 
         void AddTransform(XMatrix transform, XMatrixOrder matrixOrder);
 
-        #endregion
-
-        #region Clipping
-
+        void AppendEoClip();
+        void AppendClip();
         void SetClip(XGraphicsPath path, XCombineMode combineMode);
-
         void ResetClip();
-
-        #endregion
-
-        #region Miscellaneous
 
         /// <summary>
         /// Writes a comment to the output stream. Comments have no effect on the rendering of the output.
         /// </summary>
         void WriteComment(string comment);
 
-        #endregion
     }
 }

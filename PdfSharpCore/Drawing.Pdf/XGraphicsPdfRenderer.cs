@@ -716,6 +716,9 @@ namespace PdfSharpCore.Drawing.Pdf
 
         #region Clipping
 
+        public void AppendEoClip() => Append("W* n\n");
+        public void AppendClip() => Append("W n\n");
+
         public void SetClip(XGraphicsPath path, XCombineMode combineMode)
         {
             if (path == null)

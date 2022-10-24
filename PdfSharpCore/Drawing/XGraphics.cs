@@ -31,6 +31,7 @@ using System;
 using PdfSharpCore.Pdf;
 using PdfSharpCore.Drawing.Pdf;
 using PdfSharpCore.Pdf.Advanced;
+using System.IO;
 
 #pragma warning disable 1587
 // ReSharper disable UseNullPropagation
@@ -70,10 +71,6 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 _renderer.AppendFill(fillmode);
         }
 
-        /// <summary>
-        /// publicized AppendPath
-        /// <br/>Allows you to append a path.
-        /// </summary>
         public void AppendPath(XGraphicsPath path) => _renderer.AppendPath(path);
         public void AppendStrokeAndFill(XFillMode fillMode, bool closePath = true) => _renderer.AppendStrokeAndFill(fillMode, closePath);
         public void AppendStroke(bool closePath = true) => _renderer.AppendStroke(closePath);
@@ -91,6 +88,9 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
         public void SetStrokeColor(XColor color) => _renderer.SetStrokeColor(color, _renderer.GetColorMode());
         public void SetFillColor(XColor color) => _renderer.SetFillColor(color, _renderer.GetColorMode());
 
+        /// <summary>intersects the area inside the current clipping path with the area inside the current path to produce a new, smaller clipping path.</summary>
+        public void AppendEoClip() => _renderer.AppendEoClip();
+        public void AppendClip() => _renderer.AppendClip();
 
         #endregion
 
