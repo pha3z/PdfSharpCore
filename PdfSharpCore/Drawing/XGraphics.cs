@@ -573,6 +573,8 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
         public void AppendRoundedRectangle(double x, double y, double width, double height, double ellipseWidth, double ellipseHeight)
             => _renderer.AppendRoundedRectangle(x, y, width, height, ellipseWidth, ellipseHeight);
 
+        public void AppendCircle(double x, double y, double radius) => _renderer.AppendEllipse(x, y, radius * 2, radius * 2);
+
         /// <summary>Appends an ellipse defined by a bounding rectangle.</summary>
         public void AppendEllipse(XRect rect) => _renderer.AppendEllipse(rect.X, rect.Y, rect.Width, rect.Height);
 
@@ -672,6 +674,21 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 points[idx + 1].Y = value[2 * idx + 1];
             }
             DrawLines(pen, points);
+        }
+
+
+        public void DrawEllipse(XPen pen, XRect rect) => DrawEllipse(pen, null, rect);
+        public void DrawEllipse(XPen pen, double x, double y, double width, double height) => DrawEllipse(pen, null, x, y, width, height);
+        public void DrawEllipse(XBrush brush, XRect rect) => DrawEllipse(null, brush, rect);
+        public void DrawEllipse(XBrush brush, double x, double y, double width, double height) => DrawEllipse(null, brush, x, y, width, height);
+        public void DrawEllipse(XPen pen, XBrush brush, XRect rect) => DrawEllipse(pen, brush, rect.X, rect.Y, rect.Width, rect.Height);
+        public void DrawEllipse(XPen pen, XBrush brush, double x, double y, double width, double height)
+        {
+            if (pen == null && brush == null)
+                throw new ArgumentNullException("pen and brush", PSSR.NeedPenOrBrush);
+
+            _renderer.AppendEllipse(x, y, width, height);
+            StrokeAndFill(pen, brush, XFillMode.Winding);
         }
 
         /// <summary>
