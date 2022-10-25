@@ -396,7 +396,7 @@ namespace PdfSharpCore.Drawing.Pdf
             string fontName = _renderer.GetFontName(font, out _realizedFont);
             if (fontName != _realizedFontName || _realizedFontSize != font.Size)
             {
-                if (_renderer.Gfx.PageDirection == XPageDirection.Downwards)
+                if (_renderer.Gfx.PageDirection == YAxisDirection.Downwards)
                     _renderer.AppendFormatFont("{0} {1:" + format + "} Tf\n", fontName, font.Size);
                 else
                     _renderer.AppendFormatFont("{0} {1:" + format + "} Tf\n", fontName, font.Size);
@@ -472,7 +472,7 @@ namespace PdfSharpCore.Drawing.Pdf
                 throw new NotImplementedException("XMatrixOrder.Append");
 #endif
             XMatrix transform = value;
-            if (_renderer.Gfx.PageDirection == XPageDirection.Downwards)
+            if (_renderer.Gfx.PageDirection == YAxisDirection.Downwards)
             {
                 // Take chirality into account and
                 // invert the direction of rotation.

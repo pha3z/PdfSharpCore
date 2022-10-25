@@ -34,7 +34,7 @@ namespace PdfSharpCore.Drawing
     /// <summary>
     /// Specifies the direction of the y-axis.
     /// </summary>
-    public enum XPageDirection
+    public enum YAxisDirection
     {
         /// <summary>
         /// Increasing Y values go downwards. This is the default.
@@ -42,10 +42,8 @@ namespace PdfSharpCore.Drawing
         Downwards = 0,
 
         /// <summary>
-        /// Increasing Y values go upwards. This is only possible when drawing on a PDF page.
-        /// It is not implemented when drawing on a System.Drawing.Graphics object.
+        /// Increasing Y values go upwards. James Houx had to implement this because it was never implemented >_>
         /// </summary>
-        [Obsolete("Not implemeted - yagni")]
         Upwards = 1, // Possible, but needs a lot of case differentiation - postponed.
     }
 }

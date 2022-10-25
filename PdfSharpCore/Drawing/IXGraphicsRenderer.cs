@@ -36,6 +36,8 @@ namespace PdfSharpCore.Drawing
     /// </summary>
     public interface IXGraphicsRenderer
     {
+        YAxisDirection AppYAxisDirection { get; set; }
+
         void Close();
 
         void Realize(XPen pen, XBrush brush);
@@ -152,6 +154,6 @@ namespace PdfSharpCore.Drawing
         /// Writes a comment to the output stream. Comments have no effect on the rendering of the output.
         /// </summary>
         void WriteComment(string comment);
-
+        void BeginGraphicsMode();
     }
 }

@@ -114,6 +114,16 @@ namespace PdfSharpCore.Drawing.Pdf
 
         #region  Drawing
 
+        /// <summary>
+        /// You must invoke this before you begin drawing anything.
+        /// </summary>
+        public void BeginGraphicsMode()
+        {
+            BeginPage();
+            BeginGraphicMode();
+            RealizeTransform();
+        }
+
         public void SetStrokeWidth(double width) => _gfxState.SetStrokeWidth(width);
         public void SetLineCap(XLineCap xlc) => _gfxState.SetLineCap(xlc);
         public void SetLineJoin(XLineJoin xlj) => _gfxState.SetLineJoin(xlj);
@@ -342,7 +352,7 @@ namespace PdfSharpCore.Drawing.Pdf
                     x += rect.Width - width;
                     break;
             }
-            if (Gfx.PageDirection == XPageDirection.Downwards)
+            if (Gfx.PageDirection == YAxisDirection.Downwards)
             {
                 switch (format.LineAlignment)
                 {
@@ -535,7 +545,7 @@ namespace PdfSharpCore.Drawing.Pdf
             string name = Realize(image);
             if (!(image is XForm))
             {
-                if (_gfx.PageDirection == XPageDirection.Downwards)
+                if (_gfx.PageDirection == YAxisDirection.Downwards)
                 {
                     AppendFormatImage("q {2:" + format + "} 0 0 {3:" + format + "} {0:" + format + "} {1:" + format + "} cm {4} Do Q\n",
                         x, y + height, width, height, name);
@@ -561,7 +571,7 @@ namespace PdfSharpCore.Drawing.Pdf
                 if (cx != 0 && cy != 0)
                 {
                     XPdfForm xForm = image as XPdfForm;
-                    if (_gfx.PageDirection == XPageDirection.Downwards)
+                    if (_gfx.PageDirection == YAxisDirection.Downwards)
                     {
                         // If we have an XPdfForm, then we take the MediaBox into account.
                         double xDraw = x;
@@ -598,7 +608,7 @@ namespace PdfSharpCore.Drawing.Pdf
             string name = Realize(image);
             if (!(image is XForm))
             {
-                if (_gfx.PageDirection == XPageDirection.Downwards)
+                if (_gfx.PageDirection == YAxisDirection.Downwards)
                 {
                     AppendFormatImage("q {2:" + format + "} 0 0 {3:" + format + "} {0:" + format + "} {1:" + format + "} cm {4} Do\nQ\n",
                         x, y + height, width, height, name);
@@ -624,7 +634,7 @@ namespace PdfSharpCore.Drawing.Pdf
                 if (cx != 0 && cy != 0)
                 {
                     XPdfForm xForm = image as XPdfForm;
-                    if (_gfx.PageDirection == XPageDirection.Downwards)
+                    if (_gfx.PageDirection == YAxisDirection.Downwards)
                     {
                         double xDraw = x;
                         double yDraw = y;
@@ -1267,19 +1277,27 @@ namespace PdfSharpCore.Drawing.Pdf
                 // this technique leads to several problems with programms that compose or view PDF documents
                 // generated with PdfSharpCore.
                 // In PDFsharp 1.4 I implement a revised technique that does not need text mirroring any more.
+                // Take TrimBox into account.
+
+                PageHeightPt = Size.Height;
+                XPoint trimOffset = new XPoint();
+                if (_page != null && _page.TrimMargins.AreSet)
+                {
+                    PageHeightPt += _page.TrimMargins.Top.Point + _page.TrimMargins.Bottom.Point;
+                    trimOffset = new XPoint(_page.TrimMargins.Left.Point, _page.TrimMargins.Top.Point);
+                }
+
+                if (trimOffset != new XPoint())
+                {
+                    Debug.Assert(_gfx.PageUnit == XGraphicsUnit.Point, "With TrimMargins set the page units must be Point. Ohter cases nyi.");
+                    DefaultViewMatrix.TranslatePrepend(
+                        offsetX: trimOffset.X,
+                        offsetY: (_gfx.PageDirection == YAxisDirection.Downwards) ? -trimOffset.Y : trimOffset.Y);
+                }
 
                 DefaultViewMatrix = new XMatrix();
-                if (_gfx.PageDirection == XPageDirection.Downwards)
+                if (_gfx.PageDirection == YAxisDirection.Downwards)
                 {
-                    // Take TrimBox into account.
-                    PageHeightPt = Size.Height;
-                    XPoint trimOffset = new XPoint();
-                    if (_page != null && _page.TrimMargins.AreSet)
-                    {
-                        PageHeightPt += _page.TrimMargins.Top.Point + _page.TrimMargins.Bottom.Point;
-                        trimOffset = new XPoint(_page.TrimMargins.Left.Point, _page.TrimMargins.Top.Point);
-                    }
-
                     // Scale with page units.
                     switch (_gfx.PageUnit)
                     {
@@ -1287,29 +1305,14 @@ namespace PdfSharpCore.Drawing.Pdf
                             // Factor is 1.
                             // DefaultViewMatrix.ScalePrepend(XUnit.PointFactor);
                             break;
-
                         case XGraphicsUnit.Presentation:
-                            DefaultViewMatrix.ScalePrepend(XUnit.PresentationFactor);
-                            break;
-
+                            DefaultViewMatrix.ScalePrepend(XUnit.PresentationFactor); break;
                         case XGraphicsUnit.Inch:
-                            DefaultViewMatrix.ScalePrepend(XUnit.InchFactor);
-                            break;
-
+                            DefaultViewMatrix.ScalePrepend(XUnit.InchFactor); break;
                         case XGraphicsUnit.Millimeter:
-                            DefaultViewMatrix.ScalePrepend(XUnit.MillimeterFactor);
-                            break;
-
+                            DefaultViewMatrix.ScalePrepend(XUnit.MillimeterFactor); break;
                         case XGraphicsUnit.Centimeter:
-                            DefaultViewMatrix.ScalePrepend(XUnit.CentimeterFactor);
-                            break;
-                    }
-
-                    if (trimOffset != new XPoint())
-                    {
-                        Debug.Assert(_gfx.PageUnit == XGraphicsUnit.Point, "With TrimMargins set the page units must be Point. Ohter cases nyi.");
-                        DefaultViewMatrix.TranslatePrepend(trimOffset.X, -trimOffset.Y);
-                    }
+                            DefaultViewMatrix.ScalePrepend(XUnit.CentimeterFactor); break;                    }
 
                     // Save initial graphic state.
                     SaveState();
@@ -1339,23 +1342,14 @@ namespace PdfSharpCore.Drawing.Pdf
                             // Factor is 1.
                             // DefaultViewMatrix.ScalePrepend(XUnit.PointFactor);
                             break;
-
                         case XGraphicsUnit.Presentation:
-                            DefaultViewMatrix.ScalePrepend(XUnit.PresentationFactor);
-                            break;
-
+                            DefaultViewMatrix.ScalePrepend(XUnit.PresentationFactor); break;
                         case XGraphicsUnit.Inch:
-                            DefaultViewMatrix.ScalePrepend(XUnit.InchFactor);
-                            break;
-
+                            DefaultViewMatrix.ScalePrepend(XUnit.InchFactor); break;
                         case XGraphicsUnit.Millimeter:
-                            DefaultViewMatrix.ScalePrepend(XUnit.MillimeterFactor);
-                            break;
-
+                            DefaultViewMatrix.ScalePrepend(XUnit.MillimeterFactor); break;
                         case XGraphicsUnit.Centimeter:
-                            DefaultViewMatrix.ScalePrepend(XUnit.CentimeterFactor);
-                            break;
-                    }
+                            DefaultViewMatrix.ScalePrepend(XUnit.CentimeterFactor); break;                    }
 
                     // Save initial graphic state.
                     SaveState();
@@ -1524,12 +1518,19 @@ namespace PdfSharpCore.Drawing.Pdf
         /// </summary>
         internal XPoint WorldToView(XPoint point)
         {
+            if (PageHeightPt == 0)
+                throw new InvalidProgramException($"{nameof(PageHeightPt)} is 0. Did you forget to invoke {nameof(BeginGraphicsMode)}?");
+
             // If EffectiveCtm is not yet realized InverseEffectiveCtm is invalid.
             Debug.Assert(_gfxState.UnrealizedCtm.IsIdentity, "Somewhere a RealizeTransform is missing.");
 #if true
             // See in #else case why this is correct.
             XPoint pt = _gfxState.WorldTransform.Transform(point);
-            return _gfxState.InverseEffectiveCtm.Transform(new XPoint(pt.X, PageHeightPt / DefaultViewMatrix.M22 - pt.Y));
+            
+            if(_appYAxisDirection == YAxisDirection.Downwards)
+                return _gfxState.InverseEffectiveCtm.Transform(new XPoint(pt.X, PageHeightPt / DefaultViewMatrix.M22 - pt.Y));
+            else
+                return _gfxState.InverseEffectiveCtm.Transform(pt);
 #else
             // Get inverted PDF world transform matrix.
             XMatrix invers = _gfxState.EffectiveCtm;
@@ -1636,6 +1637,10 @@ namespace PdfSharpCore.Drawing.Pdf
         
         internal PdfPage _page;
         internal XForm _form;
+
+        /// <summary>Sets expectation for coordinates that app will feed into PdfSharp.  Allows PdfSharp to flip the coordinates on the page if necessary.</summary>
+        public YAxisDirection AppYAxisDirection { get => _appYAxisDirection; set => _appYAxisDirection = value; }
+        YAxisDirection _appYAxisDirection;
 
         /// <summary>Added by James Houx so we can get PdfPage details where we need them for decision making.</summary>
         public PdfColorMode GetColorMode() => _colorMode;

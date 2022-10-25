@@ -58,6 +58,17 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
     {
         #region NEW CODE FROM JAMES
 
+        /// <summary>
+        /// Sets expectation for coordinates that app will feed into PdfSharp.
+        /// Allows PdfSharp to flip the coordinates on the page if necessary.
+        /// </summary>
+        public YAxisDirection AppYAxisDirection { get => _renderer.AppYAxisDirection; set => _renderer.AppYAxisDirection = value; }
+
+        /// <summary>
+        /// You must invoke this before you begin drawing anything.
+        /// </summary>
+        public void BeginGraphicsMode() => _renderer.BeginGraphicsMode();
+
         public PdfColorMode GetColorMode() => _renderer.GetColorMode();
 
         void StrokeAndFill(XPen pen, XBrush brush, XFillMode fillmode)
@@ -97,7 +108,7 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
         /// <summary>
         /// Initializes a new instance of the XGraphics class for drawing on a PDF page.
         /// </summary>
-        XGraphics(PdfPage page, XGraphicsPdfPageOptions options, XGraphicsUnit pageUnit, XPageDirection pageDirection)
+        XGraphics(PdfPage page, XGraphicsPdfPageOptions options, XGraphicsUnit pageUnit, YAxisDirection pageDirection)
         {
             if (page == null)
                 throw new ArgumentNullException("page");
@@ -160,7 +171,7 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
 
             Initialize();
         }
-        XGraphics(XSize size, XGraphicsUnit pageUnit, XPageDirection pageDirection)
+        XGraphics(XSize size, XGraphicsUnit pageUnit, YAxisDirection pageDirection)
         {
             if (size == null)
                 throw new ArgumentNullException("size");
@@ -198,7 +209,7 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
             Initialize();
         }
 
-        XGraphics(IXGraphicsRenderer renderer, XSize size, XGraphicsUnit pageUnit, XPageDirection pageDirection)
+        XGraphics(IXGraphicsRenderer renderer, XSize size, XGraphicsUnit pageUnit, YAxisDirection pageDirection)
         {
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             _gsStack = new GraphicsStateStack(this);
@@ -257,22 +268,24 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
         /// Creates the measure context. This is a graphics context created only for querying measures of text.
         /// Drawing on a measure context has no effect.
         /// </summary>
-        public static XGraphics CreateMeasureContext(XSize size, XGraphicsUnit pageUnit, XPageDirection pageDirection)
+        public static XGraphics CreateMeasureContext(XSize size, XGraphicsUnit pageUnit, YAxisDirection pageDirection)
         {
             return new XGraphics(size, pageUnit, pageDirection);
         }
 
-        public static XGraphics FromRenderer(IXGraphicsRenderer renderer, XSize size, XGraphicsUnit pageUnit, XPageDirection pageDirection)
+        public static XGraphics FromRenderer(IXGraphicsRenderer renderer, XSize size, XGraphicsUnit pageUnit, YAxisDirection pageDirection)
         {
             return new XGraphics(renderer, size, pageUnit, pageDirection);
         }
 
+        
         /// <summary>
         /// Creates a new instance of the XGraphics class from a PdfSharpCore.Pdf.PdfPage object.
         /// </summary>
         public static XGraphics FromPdfPage(PdfPage page)
         {
-            return new XGraphics(page, XGraphicsPdfPageOptions.Append, XGraphicsUnit.Point, XPageDirection.Downwards);
+            throw new NotSupportedException("Really ghetto.  This actually IS supported and fully implemented.  But we don't want to allow invoking this because its straight retarded to make Downwards the default direction.");
+            return new XGraphics(page, XGraphicsPdfPageOptions.Append, XGraphicsUnit.Point, YAxisDirection.Downwards);
         }
 
         /// <summary>
@@ -280,29 +293,31 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
         /// </summary>
         public static XGraphics FromPdfPage(PdfPage page, XGraphicsUnit unit)
         {
-            return new XGraphics(page, XGraphicsPdfPageOptions.Append, unit, XPageDirection.Downwards);
+            throw new NotSupportedException("Really ghetto.  This actually IS supported and fully implemented.  But we don't want to allow invoking this because its straight retarded to make Downwards the default direction.");
+            return new XGraphics(page, XGraphicsPdfPageOptions.Append, unit, YAxisDirection.Downwards);
         }
 
         /// <summary>
         /// Creates a new instance of the XGraphics class from a PdfSharpCore.Pdf.PdfPage object.
         /// </summary>
-        public static XGraphics FromPdfPage(PdfPage page, XPageDirection pageDirection)
+        public static XGraphics FromPdfPage(PdfPage page, YAxisDirection pageDirection)
         {
             return new XGraphics(page, XGraphicsPdfPageOptions.Append, XGraphicsUnit.Point, pageDirection);
         }
 
+        /*
         /// <summary>
         /// Creates a new instance of the XGraphics class from a PdfSharpCore.Pdf.PdfPage object.
         /// </summary>
         public static XGraphics FromPdfPage(PdfPage page, XGraphicsPdfPageOptions options)
         {
             return new XGraphics(page, options, XGraphicsUnit.Point, XPageDirection.Downwards);
-        }
+        }*/
 
         /// <summary>
         /// Creates a new instance of the XGraphics class from a PdfSharpCore.Pdf.PdfPage object.
         /// </summary>
-        public static XGraphics FromPdfPage(PdfPage page, XGraphicsPdfPageOptions options, XPageDirection pageDirection)
+        public static XGraphics FromPdfPage(PdfPage page, XGraphicsPdfPageOptions options, YAxisDirection pageDirection)
         {
             return new XGraphics(page, options, XGraphicsUnit.Point, pageDirection);
         }
@@ -312,13 +327,14 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
         /// </summary>
         public static XGraphics FromPdfPage(PdfPage page, XGraphicsPdfPageOptions options, XGraphicsUnit unit)
         {
-            return new XGraphics(page, options, unit, XPageDirection.Downwards);
+            throw new NotSupportedException("Really ghetto.  This actually IS supported and fully implemented.  But we don't want to allow invoking this because its straight retarded to make Downwards the default direction.");
+            return new XGraphics(page, options, unit, YAxisDirection.Downwards);
         }
 
         /// <summary>
         /// Creates a new instance of the XGraphics class from a PdfSharpCore.Pdf.PdfPage object.
         /// </summary>
-        public static XGraphics FromPdfPage(PdfPage page, XGraphicsPdfPageOptions options, XGraphicsUnit unit, XPageDirection pageDirection)
+        public static XGraphics FromPdfPage(PdfPage page, XGraphicsPdfPageOptions options, XGraphicsUnit unit, YAxisDirection pageDirection)
         {
             return new XGraphics(page, options, unit, pageDirection);
         }
@@ -384,8 +400,13 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
                 trimOffset = new XPoint(targetPage.TrimMargins.Left.Point, targetPage.TrimMargins.Top.Point);
             }
 
+
+            //JAMES HOUX
+            //MARK THIS...
+            //I HAVEN'T CHANGED THIS CODE, BUT IT MIGHT BE AN ISSUE WE HAVE TO DEAL WITH.
+            //Weird that there's a special case for Upwards, when Upwards should be the normal pdf case.
             XMatrix matrix = new XMatrix();
-            if (_pageDirection != XPageDirection.Downwards)
+            if (_pageDirection != YAxisDirection.Downwards)
                 matrix.Prepend(new XMatrix(1, 0, 0, -1, 0, pageHeight));
 
             if (trimOffset != new XPoint())
@@ -464,17 +485,20 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
         /// <summary>
         /// Gets or sets the a value indicating in which direction y-value grow.
         /// </summary>
-        public XPageDirection PageDirection
+        public YAxisDirection PageDirection
         {
             get { return _pageDirection; }
             set
             {
+                //James houx commented out the code below...the comment is original
+
+                
                 // Is there really anybody who needes the concept of XPageDirection.Upwards?
-                if (value != XPageDirection.Downwards)
-                    throw new NotImplementedException("PageDirection must be XPageDirection.Downwards in current implementation.");
+                //if (value != XPageDirection.Downwards)
+                    //throw new NotImplementedException("PageDirection must be XPageDirection.Downwards in current implementation.");
             }
         }
-        readonly XPageDirection _pageDirection;
+        readonly YAxisDirection _pageDirection;
 
         /// <summary>
         /// Gets the current page origin. Setting the origin is not yet implemented.
