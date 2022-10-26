@@ -597,7 +597,7 @@ namespace PdfSharpCore.Drawing  // #??? aufräumen
         public void AppendRoundedRectangle(double x, double y, double width, double height, double ellipseWidth, double ellipseHeight)
             => _renderer.AppendRoundedRectangle(x, y, width, height, ellipseWidth, ellipseHeight);
 
-        public void AppendCircle(double x, double y, double radius) => _renderer.AppendEllipse(x, y, radius * 2, radius * 2);
+        public void AppendCircle(double cx, double cy, double radius) => _renderer.AppendEllipse(cx - radius, cy - radius, radius * 2, radius * 2);
 
         /// <summary>Appends an ellipse defined by a bounding rectangle.</summary>
         public void AppendEllipse(XRect rect) => _renderer.AppendEllipse(rect.X, rect.Y, rect.Width, rect.Height);

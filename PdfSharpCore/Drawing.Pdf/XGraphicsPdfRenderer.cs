@@ -246,7 +246,7 @@ namespace PdfSharpCore.Drawing.Pdf
             const string format = Config.SignificantFigures3;
 
             //AppendFormat123("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} re\n", x, y, width, -height);
-            AppendFormatRect("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} re\n", x, y + height, width, height);
+            AppendFormatRect("{0:" + format + "} {1:" + format + "} {2:" + format + "} {3:" + format + "} re\n", x, y, width, height);
         }
 
         // ----- DrawRoundedRectangle -----------------------------------------------------------------
