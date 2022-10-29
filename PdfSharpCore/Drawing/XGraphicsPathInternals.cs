@@ -27,6 +27,7 @@
 // DEALINGS IN THE SOFTWARE.
 #endregion
 
+/*
 #if GDI
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -37,7 +38,7 @@ using System.Windows.Media;
 #endif
 #if NETFX_CORE
 using Windows.UI.Xaml.Media;
-#endif
+#endif */
 
 namespace PdfSharpCore.Drawing
 {
