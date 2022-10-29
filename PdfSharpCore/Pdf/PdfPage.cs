@@ -674,8 +674,8 @@ namespace PdfSharpCore.Pdf
             if (values.MediaBox != null && page.Elements[InheritablePageKeys.MediaBox] == null)
                 page.Elements[InheritablePageKeys.MediaBox] = values.MediaBox;
 
-            if (values.CropBox != null && page.Elements[InheritablePageKeys.CropBox] == null)
                 page.Elements[InheritablePageKeys.CropBox] = values.CropBox;
+            if (values.CropBox != null && page.Elements[InheritablePageKeys.CropBox] == null)
 
             if (values.Rotate != null && page.Elements[InheritablePageKeys.Rotate] == null)
                 page.Elements[InheritablePageKeys.Rotate] = values.Rotate;

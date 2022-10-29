@@ -73,7 +73,7 @@ namespace MigraDocCore.Rendering
             this.previousListNumbers[ListType.NumberList3] = 0;
             this.formattedDocument = new FormattedDocument(this.document, this);
             //REM: Size should not be necessary in this case.
-            XGraphics gfx = XGraphics.CreateMeasureContext(new XSize(2000, 2000), XGraphicsUnit.Point, XPageDirection.Downwards);
+            XGraphics gfx = XGraphics.CreateMeasureContext(new XSize(2000, 2000), XGraphicsUnit.Point, YAxisDirection.Downwards);
             //      this.previousListNumber = int.MinValue;
             //gfx.MUH = this.unicode;
             //gfx.MFEH = this.fontEmbedding;
