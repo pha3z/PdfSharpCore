@@ -60,7 +60,10 @@ namespace PdfSharpCore.Pdf.Advanced
             {
                 // Pdf supports Jpeg, therefore we can write what we've read:
                 case "{B96B3CAE-0728-11D3-9D7B-0000F81EF32E}":  //XImageFormat.Jpeg
-                    InitializeJpeg();
+                    if(document.Options.ConvertJpegToFlate)
+                        InitializeNonJpeg();
+                    else
+                        InitializeJpeg();
                     break;
 
                 // All other image formats are converted to PDF bitmaps:

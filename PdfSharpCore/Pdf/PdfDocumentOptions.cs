@@ -42,6 +42,8 @@ namespace PdfSharpCore.Pdf
             //_writeProcedureSets = true;
         }
 
+        public bool ConvertJpegToFlate { get; set; } = true;
+
         /// <summary>
         /// Gets or sets the color mode.
         /// </summary>

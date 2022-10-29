@@ -40,12 +40,15 @@ namespace PdfSharpCore.Pdf.Advanced
     /// </summary>
     internal sealed class PdfImageTable : PdfResourceTable
     {
+
         /// <summary>
         /// Initializes a new instance of this class, which is a singleton for each document.
         /// </summary>
         public PdfImageTable(PdfDocument document)
             : base(document)
-        { }
+        {
+
+        }
 
         /// <summary>
         /// Gets a PdfImage from an XImage. If no PdfImage already exists, a new one is created.

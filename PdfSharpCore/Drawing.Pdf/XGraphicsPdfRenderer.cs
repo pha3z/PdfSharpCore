@@ -1560,6 +1560,7 @@ namespace PdfSharpCore.Drawing.Pdf
         }
         #endregion
 
+        public bool ConvertJpegToFlate { get; set; } = true;
         /// <summary>
         /// Gets the owning PdfDocument of this page or form.
         /// </summary>
@@ -1598,7 +1599,7 @@ namespace PdfSharpCore.Drawing.Pdf
         {
             get
             {
-                if (_page != null)
+                if (_page != null) 
                     return new XSize(_page.Width, _page.Height);
                 return _form.Size;
             }
