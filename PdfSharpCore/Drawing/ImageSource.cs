@@ -25,6 +25,11 @@ namespace MigraDocCore.DocumentObjectModel.MigraDoc.DocumentObjectModel.Shapes
             void SaveAsJpeg(MemoryStream ms);
             bool Transparent { get; }
             void SaveAsPdfBitmap(MemoryStream ms);
+
+            //James Houx says:
+            //This is where we could add GetIccProfileBytes()
+            //Then we would implement it as appropriate.
+            //
         }
 
         protected abstract IImageSource FromFileImpl(string path, int? quality = 75);

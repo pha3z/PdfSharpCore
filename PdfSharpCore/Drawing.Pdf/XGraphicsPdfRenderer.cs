@@ -565,6 +565,11 @@ namespace PdfSharpCore.Drawing.Pdf
 
                 PdfFormXObject pdfForm = Owner.FormTable.GetForm(form);
 
+                //James Houx says:
+                //TODO
+                //This is where we would add an ICC Profile or a refernece to an IndirectObject that's an ICC Profile.
+                //pdfForm.Resources.Elements.
+
                 double cx = width / image.PointWidth;
                 double cy = height / image.PointHeight;
 
