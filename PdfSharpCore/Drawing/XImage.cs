@@ -230,7 +230,7 @@ namespace PdfSharpCore.Drawing
         {
             get
             {
-                return _source.Width * 72 / 96.0;
+                return _source.Width * 72 / HorizontalResolution;
             }
         }
 
@@ -241,7 +241,7 @@ namespace PdfSharpCore.Drawing
         {
             get
             {
-                return _source.Height * 72 / 96.0;
+                return _source.Height * 72 / VerticalResolution;
             }
         }
 
